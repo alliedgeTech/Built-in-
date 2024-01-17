@@ -1,102 +1,60 @@
 import express from "express";
 import bodyParser from "body-parser";
-import Stripe from "stripe";
 import env from "dotenv";
+import Razorpay from "razorpay";
+
 env.config({ path: "./.env" });
 const app = express();
+app.use(bodyParser.json()); // Add this line to parse JSON
 
 const port = 3000; //add your port here
-const PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || "";
-const SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_ID || "";
+const RAZORPAY_SECRET_KEY = process.env.RAZORPAY_KEY || "";
 
-const stripe = new Stripe(SECRET_KEY, {
-  apiVersion: "2023-10-16",
-});
-app.listen(port, () => {
-  console.log(`Server Started`);
-});
-app.use((req, res, next) => {
-  bodyParser.json()(req, res, next);
+const razorpay = new Razorpay({
+  key_id: RAZORPAY_KEY_ID,
+  key_secret: RAZORPAY_SECRET_KEY,
 });
 
-app.get("/stripe-key", (_, res) => {
-  return res.send({ publishableKey: PUBLISHABLE_KEY });
-});
-
-app.post("/create-payment-intent", async (req, res) => {
-  const {
-    email,
-    currency,
-    request_three_d_secure,
-    payment_method_types = [],
-    amount,
-  } = req.body;
-  console.log("running create-payment-intent");
-  const customer = await stripe.customers.create({ email });
-
-  const params = {
-    amount: amount,
-    currency,
-    customer: customer.id,
-    payment_method_options: {
-      card: {
-        request_three_d_secure: request_three_d_secure || "automatic",
-      },
-    },
-    payment_method_types: payment_method_types,
-  };
-
+app.post("/createOrder", async (req, res) => {
   try {
-    const paymentIntent = await stripe.paymentIntents.create(params);
-    return res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
+    const options = {
+      amount: req.body.amount || "3000", // Amount in paise
+      currency: req.body.currency || "INR",
+      receipt: req.body.receipt || "order_receipt_" + Date.now(),
+      payment_capture: 1, // Automatically capture the payment
+    };
+
+    const order = await razorpay.orders.create(options);
+    console.log("order", order);
+    return res.json({ order });
   } catch (error) {
-    return res.send({
-      error: error.raw.message,
-    });
+    console.error("Error creating order:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.post("/payment-sheet-setup-intent", async (req, res) => {
-  const { email, payment_method_types = [] } = req.body;
+app.post("/paymentCallback", async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
+      req.body;
 
-  const customer = await stripe.customers.create({ email });
+    // Verify the payment signature (implement your own verification logic)
 
-  const ephemeralKey = await stripe.ephemeralKeys.create(
-    { customer: customer.id },
-    { apiVersion: "2023-10-16" }
-  );
-  const setupIntent = await stripe.setupIntents.create({
-    ...{ customer: customer.id, payment_method_types },
-  });
+    // Capture the payment
+    const captureResponse = await razorpay.payments.capture(
+      razorpay_payment_id,
+      req.body.amount
+    );
 
-  return res.json({
-    setupIntent: setupIntent.client_secret,
-    ephemeralKey: ephemeralKey.secret,
-    customer: customer.id,
-  });
+    console.log("Payment captured:", captureResponse);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error capturing payment:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
-
-app.post("/payment-sheet", async (req, res) => {
-  const { email, currency, amount } = req.body;
-  console.log("running payment-sheet");
-
-  const customer = await stripe.customers.create({ email });
-
-  const ephemeralKey = await stripe.ephemeralKeys.create(
-    { customer: customer.id },
-    { apiVersion: "2023-10-16" }
-  );
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: amount,
-    currency: currency,
-    payment_method_types: ["card"],
-    customer: customer.id,
-  });
-  return res.json({
-    paymentIntent: paymentIntent,
-    ephemeralKey: ephemeralKey.secret,
-    customer: customer.id,
-  });
+app.listen(port, () => {
+  console.log(`Server Started`);
 });
