@@ -6,6 +6,7 @@ import Razorpay from "razorpay";
 env.config({ path: "./.env" });
 const app = express();
 app.use(bodyParser.json()); // Add this line to parse JSON
+app.use(express.static("public"));
 
 const port = 3000; //add your port here
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_ID || "";
@@ -23,6 +24,11 @@ app.post("/createOrder", async (req, res) => {
       currency: req.body.currency || "INR",
       receipt: req.body.receipt || "order_receipt_" + Date.now(),
       payment_capture: 1, // Automatically capture the payment
+      notes: {
+        description: "Payment for paper solution",
+        imageUrl:
+          "https://firebasestorage.googleapis.com/v0/b/adcl-tech.appspot.com/o/builtuplogo%2Fbuiltuplogo200x200.png?alt=media&token=19618249-60bc-45c3-9d50-90b7df7e9ade",
+      },
     };
 
     const order = await razorpay.orders.create(options);
@@ -56,5 +62,5 @@ app.post("/paymentCallback", async (req, res) => {
   }
 });
 app.listen(port, () => {
-  console.log(`Server Started`);
+  console.log(`Server Started`, port);
 });
