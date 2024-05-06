@@ -61,6 +61,11 @@ app.post("/paymentCallback", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+app.head("/",(req,res)=>{
+  return res.status(200).json({message:"this is working"})
+})
+
 app.listen(port, () => {
   console.log(`Server Started`, port);
 });
