@@ -12,10 +12,10 @@ const port = 3000; //add your port here
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_ID || "";
 const RAZORPAY_SECRET_KEY = process.env.RAZORPAY_KEY || "";
 
-const razorpay = new Razorpay({
-  key_id: RAZORPAY_KEY_ID,
-  key_secret: RAZORPAY_SECRET_KEY,
-});
+// const razorpay = new Razorpay({
+//   key_id: RAZORPAY_KEY_ID,
+//   key_secret: RAZORPAY_SECRET_KEY,
+// });
 
 app.post("/createOrder", async (req, res) => {
   try {
@@ -41,26 +41,26 @@ app.post("/createOrder", async (req, res) => {
   }
 });
 
-app.post("/paymentCallback", async (req, res) => {
-  try {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
-      req.body;
+// app.post("/paymentCallback", async (req, res) => {
+//   try {
+//     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
+//       req.body;
 
-    // Verify the payment signature (implement your own verification logic)
-    // Capture the payment
-    const captureResponse = await razorpay.payments.capture(
-      razorpay_payment_id,
-      req.body.amount
-    );
+//     // Verify the payment signature (implement your own verification logic)
+//     // Capture the payment
+//     const captureResponse = await razorpay.payments.capture(
+//       razorpay_payment_id,
+//       req.body.amount
+//     );
 
-    console.log("Payment captured:", captureResponse);
+//     console.log("Payment captured:", captureResponse);
 
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error capturing payment:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+//     res.json({ success: true });
+//   } catch (error) {
+//     console.error("Error capturing payment:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
 
 app.head("/",(req,res)=>{
   return res.status(200).json({message:"this is working"})
