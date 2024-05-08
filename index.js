@@ -19,21 +19,22 @@ const razorpay = new Razorpay({
 
 app.post("/createOrder", async (req, res) => {
   try {
-    const options = {
-      amount: req.body.amount || "3000", // Amount in paise
-      currency: req.body.currency || "INR",
-      receipt: req.body.receipt || "order_receipt_" + Date.now(),
-      payment_capture: 1, // Automatically capture the payment
-      notes: {
-        description: "Payment for paper solution",
-        imageUrl:
-          "https://firebasestorage.googleapis.com/v0/b/adcl-tech.appspot.com/o/builtuplogo%2Fbuiltuplogo200x200.png?alt=media&token=19618249-60bc-45c3-9d50-90b7df7e9ade",
-      },
-    };
+    // const options = {
+    //   amount: req.body.amount || "3000", // Amount in paise
+    //   currency: req.body.currency || "INR",
+    //   receipt: req.body.receipt || "order_receipt_" + Date.now(),
+    //   payment_capture: 1, // Automatically capture the payment
+    //   notes: {
+    //     description: "Payment for paper solution",
+    //     imageUrl:
+    //       "https://firebasestorage.googleapis.com/v0/b/adcl-tech.appspot.com/o/builtuplogo%2Fbuiltuplogo200x200.png?alt=media&token=19618249-60bc-45c3-9d50-90b7df7e9ade",
+    //   },
+    // };
 
-    const order = await razorpay.orders.create(options);
-    console.log("order", order);
-    return res.json({ order });
+    // const order = await razorpay.orders.create(options);
+    // console.log("order", order);
+    // return res.json({ order });
+    return res.status(500).json({ error:"Payment is closed due to some banking issue resolved soon." })
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -46,7 +47,6 @@ app.post("/paymentCallback", async (req, res) => {
       req.body;
 
     // Verify the payment signature (implement your own verification logic)
-
     // Capture the payment
     const captureResponse = await razorpay.payments.capture(
       razorpay_payment_id,
