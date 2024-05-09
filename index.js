@@ -12,10 +12,10 @@ const port = 3000; //add your port here
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_ID || "";
 const RAZORPAY_SECRET_KEY = process.env.RAZORPAY_KEY || "";
 
-// const razorpay = new Razorpay({
-//   key_id: RAZORPAY_KEY_ID,
-//   key_secret: RAZORPAY_SECRET_KEY,
-// });
+const razorpay = new Razorpay({
+  key_id: RAZORPAY_KEY_ID,
+  key_secret: RAZORPAY_SECRET_KEY,
+});
 
 app.post("/createOrder", async (req, res) => {
   try {
@@ -31,7 +31,7 @@ app.post("/createOrder", async (req, res) => {
       },
     };
 
-    const order = await Razorpay.orders.create(options);
+    const order = await razorpay.orders.create(options);
     console.log("order", order);
     return res.json({ order });
   } catch (error) {
