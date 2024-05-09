@@ -31,7 +31,7 @@ app.post("/createOrder", async (req, res) => {
       },
     };
 
-    const order = await razorpay.orders.create(options);
+    const order = await Razorpay.orders.create(options);
     console.log("order", order);
     return res.json({ order });
   } catch (error) {
